@@ -41,4 +41,4 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 from webapp import models
 from webapp import routes
 
-#db.create_all()
+db.create_all()
