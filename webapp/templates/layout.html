@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+
+
+<head>
+    <CENTER>
+            <title>I have paws
+            </title>
+    </CENTER>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta name="description" content="I have paws">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+
+</head>
+
+<body>
+    </style>
+
+<div class="container">
+
+    <div class="jumbotron jumbotron-fluid">
+        <header class="intro-header" style="background-image: url('static/pic/back1.jpg')">
+        <CENTER>
+
+          <h1>
+                 <font color="green"> I HAVE PAWS!</font>
+          </h1>
+
+        <p>
+               <font color="green"> Look and add new pictures</font></p>
+        <a href="{{ url_for('home') }}" class="btn btn-primary">Home</a>
+        <a href="{{ url_for('login') }}" class="btn btn-success btn-lg">Sign in</a>
+        <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg">Create an account</a>
+
+        {%if current_user.is_authenticated %}
+        <a href="{{ url_for('adding_pics') }}" class="btn btn-dark btn-lg">Upload new picture</a>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg">Log out</a>
+        {% endif %}
+
+        </CENTER>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+
+
+    {% block content %}{% endblock %}
+
+</div>
+</body>
+
+</html>

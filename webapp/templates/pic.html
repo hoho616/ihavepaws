@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+
+<div class="container">
+    <h1 class="display-4"><b>"{{ pictures.title }}"</b></h1>
+    <p class="lead">{{ pictures.description }}</p>
+
+</div>
+<div class="top_bar">
+    <form action="/pics/{{ pictures.id + 1}}" method="POST">
+        <button class="btn btn-primary"  type="submit">Next</button>
+    </form>
+    <form action="/pics/{{ pictures.id - 1}}" method="POST">
+        <button class="btn btn-primary" type="submit">Back</button>
+    </form>
+  <br>
+    <br>
+</div>
+<img src="{{ pictures.path }}" width=100% height=100% align="middle">
+
+<p> Count of likes equal to {{likes.like}} </p>
+
+
+<form action="/like/{{ pictures.id }}" method="POST">
+    <button class="btn btn-primary" type="submit">Like</button>
+</form>
+
+{% for com in comments %}
+<p>   <h4>{{com.content}}</h4>
+<form action="/delete_comment/{{ com.id }}" method="POST">
+    <button class="btn btn-danger" type="submit">Delete</button>
+</form>
+</p>
+
+
+{% endfor %}
+
+<form method="POST" action="/pics/{{ pictures.id }}">
+
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.content.label }}
+        {{ form.content(size=32, class_="form-control") }}
+    </div>
+
+
+    {% if form.errors %}
+    {% for field, errors in form.errors.items() %}
+    {% for err in errors %}
+    <div class="alert alert-danger" role="alert">
+        Error in <b>{{ field.upper() }}</b> field - {{ err }}
+    </div>
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+    {{ form.submit(class_="btn btn-primary") }}
+</form>
+
+
+{% endblock %}
