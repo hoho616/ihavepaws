@@ -8,37 +8,74 @@
     <p class="lead">{{ pictures.description }}</p>
 
 </div>
-<div class="top_bar">
+
+{% if paga == 1 %}
+<div class="mx-auto" style="width: 200px;">
+<div class="container">
+<div class="row">
+        <div class="col-sm-2">
+        <form action="/pics/{{ pictures.id - 1}}" method="POST">
+        <button class="btn btn-primary" type="submit">Back</button>
+    </form>
+             </div>
+    <div class="col-sm-2">
     <form action="/pics/{{ pictures.id + 1}}" method="POST">
         <button class="btn btn-primary"  type="submit">Next</button>
     </form>
-    <form action="/pics/{{ pictures.id - 1}}" method="POST">
-        <button class="btn btn-primary" type="submit">Back</button>
-    </form>
+         </div>
+{% endif %}
+</div>
+
+</div>
+    </div>
   <br>
     <br>
-</div>
-<img src="{{ pictures.path }}" width=100% height=100% align="middle">
 
-<p> Count of likes equal to {{likes.like}} </p>
-
+<CENTER>
+      <div class="jumbotron jumbotron-fluid">
+<img src="{{ pictures.path }}" width=90% height=90% align="middle">
+    </div>
+<p> Count of likes is {{likes.like}} </p>
 
 <form action="/like/{{ pictures.id }}" method="POST">
     <button class="btn btn-primary" type="submit">Like</button>
+</CENTER>
+
 </form>
+<br>
+<br>
+<br>
+<br>
 
 {% for com in comments %}
-<p>   <h4>{{com.content}}</h4>
+
+<div style=”margin-left:20px;”>
+<div class="row">
+
+
+<p>
+<h4>{{com.content}}</h4>
+    <br>
+
+
+
+    <div class="col-sm-2">
+          {% if com.user_id  == user_id %}
 <form action="/delete_comment/{{ com.id }}" method="POST">
-    <button class="btn btn-danger" type="submit">Delete</button>
+    <button class="btn btn-danger" type="submit">Del</button>
 </form>
+        	{% endif %}
+
+        <br>
+
 </p>
-
-
+        </div>
+    </div>
+    </div>
+</body>
 {% endfor %}
 
 <form method="POST" action="/pics/{{ pictures.id }}">
-
     {{ form.hidden_tag() }}
     <div class="form-group">
         {{ form.content.label }}
@@ -46,21 +83,7 @@
     </div>
 
 
-    {% if form.errors %}
-    {% for field, errors in form.errors.items() %}
-    {% for err in errors %}
-    <div class="alert alert-danger" role="alert">
-        Error in <b>{{ field.upper() }}</b> field - {{ err }}
-    </div>
-    {% endfor %}
-    {% endfor %}
-    {% endif %}
 
-    {% if error %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-    {% endif %}
     {{ form.submit(class_="btn btn-primary") }}
 </form>
 

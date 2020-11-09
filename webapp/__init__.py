@@ -4,7 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-
+from flask_wtf.csrf import CSRFProtect
 class Config:
     # общие
     FLASK_DEBUG = environ.get('FLASK_DEBUG', '1')
@@ -23,7 +23,7 @@ class Config:
     SECRET_KEY = 'zzzzzzz11111'
 
 #UPLOAD_FOLDER ='\\static\\uploads'
-ALLOWED_EXTENSIONS = set(['txt','pdf','png','jpg','jpeg','gif'])
+ALLOWED_EXTENSIONS = set(['png','jpg','jpeg','gif'])
 
 app = Flask(__name__,
             static_folder='static',
@@ -36,6 +36,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
 login.login_view = 'login'
+
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 from webapp import models

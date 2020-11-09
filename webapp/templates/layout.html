@@ -1,7 +1,6 @@
 <!doctype html>
 <html>
 
-
 <head>
     <CENTER>
             <title>I have paws
@@ -31,7 +30,8 @@
 <div class="container">
 
     <div class="jumbotron jumbotron-fluid">
-        <header class="intro-header" style="background-image: url('static/pic/back1.jpg')">
+<header class="intro-header" style="background-image: url('http://127.0.0.1:5000/static/pic/back1.jpg')">
+
         <CENTER>
 
           <h1>
@@ -40,7 +40,7 @@
 
         <p>
                <font color="green"> Look and add new pictures</font></p>
-        <a href="{{ url_for('home') }}" class="btn btn-primary">Home</a>
+        <a href="{{ url_for('home') }}" class="btn btn-primary btn-lg">Home</a>
         <a href="{{ url_for('login') }}" class="btn btn-success btn-lg">Sign in</a>
         <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg">Create an account</a>
 
@@ -57,7 +57,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
-
+     {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ message }}
+    </div>
+    {% endfor %}
 
     {% block content %}{% endblock %}
 

@@ -1,7 +1,7 @@
 from webapp.models import *
 from flask_sqlalchemy import *
 from sqlalchemy import func
-from flask import jsonify, render_template
+from flask import jsonify, render_template, flash
 from flask import redirect, url_for
 from webapp import app, db
 from webapp.models import Pictures
@@ -17,7 +17,38 @@ from webapp.forms import LoginForm, RegistrationForm
 from werkzeug.utils import secure_filename
 import random
 import string
+from flask_login import current_user
 
+import keras
+import cv2
+import numpy as np
+
+class Predict:
+
+    def __init__(self, path, file):
+
+        self.path = path
+        self.file = file
+
+    def load_model(self):
+
+        self.loaded_model = keras.models.load_model(self.path)
+        return self.loaded_model
+
+    def makepredictions(self):
+
+        img = cv2.imread(self.file)
+        img = cv2.resize(img, (64, 64))
+        img = np.reshape(img, [1, 64, 64, 3])
+        predictions = self.loaded_model.predict_classes(img)
+
+
+        if predictions == 0:
+            predictions = 'Cat'
+        elif predictions == 1:
+            predictions = 'Not Cat'
+
+        return  predictions
 
 @app.route('/home')
 def home():
@@ -28,15 +59,15 @@ def home():
 
 @app.route('/pics/<id>', methods=['GET', 'POST'])
 @app.route('/pics/', methods=['GET', 'POST'])
-def pics(id=0):
+def pics(id=0, paga=1):
     form = СommentForm()
-    pics  = Pictures.query.all()
+    pics = Pictures.query.all()
 
     ids = []
     for p in pics:
         ids.append(p.id)
 
-    #ids = list(map(lambda x: x.id, pics))
+    # ids = list(map(lambda x: x.id, pics))
     id = int(id)
     if int(id) in ids:
         pass
@@ -51,31 +82,38 @@ def pics(id=0):
     pictures = Pictures.query.get(id)
     likes = Likes.query.filter_by(pic_id=id).first()
     comments = Comments.query.filter_by(pic_id=id).all()
+    user_id = current_user.get_id()
     if form.validate_on_submit() and form.content.data:
         comment = Comments(content=form.content.data,
-                           pic_id=id)
+                           pic_id=id, user_id=user_id)
         db.session.add(comment)
         db.session.commit()
     comments = Comments.query.filter_by(pic_id=id).all()
-    return render_template('pic.html', pictures=pictures, comments=comments, likes=likes, form=form)
 
+    if user_id == None:
+        flash('Authorization is required')
+        return render_template('home.html')
+    else:
+        return render_template('pic.html', pictures=pictures, comments=comments, likes=likes, user_id=int(user_id), paga=paga, form=form)
 
+@login_required
 @app.route('/like/<id>', methods=['GET', 'POST'])
 def likes(id):
     if request.method == 'POST':
         form = СommentForm()
-        #likes = Likes.query.get(pic_id=id)
+        # likes = Likes.query.get(pic_id=id)
         likes = Likes.query.filter_by(pic_id=id).first()
         pic_id = likes.pic_id
         likes.like = likes.like + 1
         db.session.commit()
-        #like = Likes(id=likes.id, like=likes.like + 1, pic_id=id, )
-        #db.session.add(like)
-        #db.session.commit()
+        # like = Likes(id=likes.id, like=likes.like + 1, pic_id=id, )
+        # db.session.add(like)
+        # db.session.commit()
         pictures = Pictures.query.get(id)
         comments = Comments.query.filter_by(pic_id=id).all()
-        #return render_template('pic.html', pictures=pictures, comments=comments, likes=likes, form=form)
+        # return render_template('pic.html', pictures=pictures, comments=comments, likes=likes, form=form)
         return redirect(url_for('pics', id=pic_id))
+
 
 @app.route('/delete_comment/<id>', methods=['GET', 'POST'])
 def delete_comment(id):
@@ -86,6 +124,7 @@ def delete_comment(id):
         db.session.commit()
 
         return redirect(url_for('pics', id=pic_id))
+
 
 @app.route('/update')
 def update_user():
@@ -116,7 +155,7 @@ def list_users():
 def newPic():
     if request.method == 'POST':
         id = db.session.query(func.max(Pictures.id)).first()
-        #path = f'C:\\app\ihavepaws\pics\\{id + 1}'
+        # path = f'C:\\app\ihavepaws\pics\\{id + 1}'
         path = f'\\static\\pics\\{id + 1}'
         newPic = Pictures(title=request.form['title'], path=path)
         db.session.add(newPic)
@@ -125,31 +164,39 @@ def newPic():
     else:
         return render_template('home.html')
 
-
+@login_required
 @app.route('/adding_pics', methods=('GET', 'POST'))
 def adding_pics():
     form = PicturesForm()
-    if form.validate_on_submit():
+    if form.validate_on_submit() and request.files["file"]:
         file = request.files["file"]
-        #if bool(file.filename):
-         #   file_bytes = file.read(MAX_FILE_SIZE)
-            # args["file_size_error"] = len(file_bytes) == MAX_FILE_SIZE
-        #filename = secure_filename(file.filename)
+        # if bool(file.filename):
+        #   file_bytes = file.read(MAX_FILE_SIZE)
+        # args["file_size_error"] = len(file_bytes) == MAX_FILE_SIZE
+        # filename = secure_filename(file.filename)
         filename = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-        # пути абсолютные потому что пробовал по всякому, чтобы не кораптился файл )
         file.save(os.path.join('C:\ihavepaws-homework\webapp\static\pic\\', filename))
-        pic = Pictures(title=form.title.data,
-                       description=form.description.data,
-                       path=('\static\pic\\' + filename))
-        db.session.add(pic)
-        db.session.commit()
-        pic = Pictures.query.filter_by(path=('\static\pic\\'+filename)).first()
-        like = Likes(like=0, pic_id=pic.id)
-        db.session.add(like)
-        db.session.commit()
+        pred = Predict(
+            path='C:\ihavepaws-homework\webapp\Cat.h5',
+            file='C:\ihavepaws-homework\webapp\static\pic\\'+filename)
 
-        return redirect(url_for('home'))
+        pred.load_model()
+        if pred.makepredictions() == 'Not Cat':
+            flash('There are no cats')
+            return render_template('adding_pics.html', form=form)
+        else:
+            pic = Pictures(title=form.title.data,
+                           description=form.description.data,
+                           path=('\static\pic\\' + filename))
+            db.session.add(pic)
+            db.session.commit()
+            pic = Pictures.query.filter_by(path=('\static\pic\\' + filename)).first()
+            like = Likes(like=0, pic_id=pic.id)
+            db.session.add(like)
+            db.session.commit()
+            return redirect(url_for('pics', id=pic.id))
     else:
+        flash('Add a file with a cat')
         return render_template('adding_pics.html', form=form)
 
 
@@ -225,6 +272,7 @@ def upload():
         db.session.commit()
     return render_template("upload.html", args=args)
 
+@login_required
 @app.route('/add_comment/<id>', methods=('GET', 'POST'))
 def adding_comment(id):
     form = СommentForm()
@@ -233,13 +281,14 @@ def adding_comment(id):
     comments = Comments.query.filter_by(pic_id=id).all()
     if form.validate_on_submit():
         comment = Comments(content=form.content.data,
-                     pic_id=id)
+                           pic_id=id)
         db.session.add(comment)
         db.session.commit()
         comments = Comments.query.filter_by(pic_id=id).all()
         return render_template('pic.html', pictures=pictures, comments=comments, likes=likes, form=form)
     else:
         return render_template('pic.html', pictures=pictures, comments=comments, likes=likes, form=form)
+
 
 @app.route('/top_likes', methods=['GET', 'POST'])
 def top_likes():
@@ -249,7 +298,12 @@ def top_likes():
         lks.append(l.like)
     top_likes = Likes.query.filter_by(like=max(lks)).first()
     pic_id = top_likes.pic_id
-    return redirect(url_for('pics', id=pic_id))
+    user_id = current_user.get_id()
+    if user_id == None:
+        flash('Authorization is required')
+        return render_template('home.html')
+    return redirect(url_for('pics', id=pic_id, paga=0))
+
 
 @app.route('/top_commented', methods=['GET', 'POST'])
 def top_commented():
@@ -260,4 +314,14 @@ def top_commented():
 
     tc = max(set(cmts), key=cmts.count)
 
+    user_id = current_user.get_id()
+    if user_id == None:
+        flash('Authorization is required')
+        return render_template('home.html')
     return redirect(url_for('pics', id=tc))
+
+@app.route('/dressed', methods=['GET', 'POST'])
+def dressed():
+
+    flash('For access: Send a photo of your credit card from both sides')
+    return render_template('home.html')
