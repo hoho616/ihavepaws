@@ -18,10 +18,13 @@ from werkzeug.utils import secure_filename
 import random
 import string
 from flask_login import current_user
-
+from os import path
 import keras
 import cv2
 import numpy as np
+
+parent_dir = path.dirname(path.abspath(__file__))
+
 
 class Predict:
 
@@ -175,10 +178,14 @@ def adding_pics():
         # args["file_size_error"] = len(file_bytes) == MAX_FILE_SIZE
         # filename = secure_filename(file.filename)
         filename = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-        file.save(os.path.join('C:\ihavepaws-homework\webapp\static\pic\\', filename))
+        #file.save(os.path.join('C:\ihavepaws-homework\webapp\static\pic\\', filename))
+        file.save(os.path.join(parent_dir,'static\pic', filename))
+        #path.join(parent_dir, 'path', 'file.txt')
         pred = Predict(
-            path='C:\ihavepaws-homework\webapp\Cat.h5',
-            file='C:\ihavepaws-homework\webapp\static\pic\\'+filename)
+            path = os.path.join(parent_dir,'Cat.h5'),
+                                file=os.path.join(parent_dir,'static\pic' ,filename))
+            #path='C:\ihavepaws-homework\webapp\Cat.h5',
+            #file='C:\ihavepaws-homework\webapp\static\pic\\'+filename)
 
         pred.load_model()
         if pred.makepredictions() == 'Not Cat':
